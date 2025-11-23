@@ -95,3 +95,48 @@ resource "docker_container" "nginx" {
     container_path = "/etc/nginx/nginx.conf"
   }
 }
+
+# --- MONITORING ---
+
+# Prometheus
+resource "docker_image" "prometheus" {
+  name         = "prom/prometheus:latest"
+  keep_locally = true
+}
+
+resource "docker_container" "prometheus" {
+  image = docker_image.prometheus.image_id
+  name  = "dataops-prometheus"
+  networks_advanced {
+    name = docker_network.app_network.name
+  }
+  ports {
+    internal = 9090
+    external = 9090
+  }
+  volumes {
+    host_path      = abspath("${path.module}/prometheus.yml")
+    container_path = "/etc/prometheus/prometheus.yml"
+  }
+}
+
+# Grafana
+resource "docker_image" "grafana" {
+  name         = "grafana/grafana:latest"
+  keep_locally = true
+}
+
+resource "docker_container" "grafana" {
+  image = docker_image.grafana.image_id
+  name  = "dataops-grafana"
+  networks_advanced {
+    name = docker_network.app_network.name
+  }
+  ports {
+    internal = 3000
+    external = 3000
+  }
+  env = [
+    "GF_SECURITY_ADMIN_PASSWORD=admin" # Standardpasswort für Demo
+  ]
+}

@@ -2,11 +2,15 @@ from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy import create_engine, Column, Integer, String, DateTime
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session
+from prometheus_fastapi_instrumentator import Instrumentator # NEU
 import os
 import datetime
 import time
 
 app = FastAPI()
+
+Instrumentator().instrument(app).expose(app)
+# -----------------------------------------
 
 # Datenbank Konfiguration
 DB_USER = os.getenv("DB_USER", "user")
