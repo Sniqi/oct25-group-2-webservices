@@ -82,6 +82,7 @@ resource "docker_image" "nginx" {
 resource "docker_container" "nginx" {
   image = docker_image.nginx.image_id
   name  = "dataops-nginx"
+  depends_on = [docker_container.app]
   networks_advanced {
     name = docker_network.app_network.name
   }
