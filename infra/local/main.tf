@@ -121,6 +121,51 @@ resource "docker_container" "prometheus" {
   }
 }
 
+# Loki (Log Aggregation)
+resource "docker_image" "loki" {
+  name         = "grafana/loki:2.9.2"
+  keep_locally = true
+}
+
+resource "docker_container" "loki" {
+  image = docker_image.loki.image_id
+  name  = "dataops-loki"
+  networks_advanced {
+    name = docker_network.app_network.name
+  }
+  ports {
+    internal = 3100
+    external = 3100
+  }
+  volumes {
+    host_path      = abspath("${path.module}/loki.yml")
+    container_path = "/etc/loki/local-config.yaml"
+  }
+}
+
+# Promtail (Log Collector)
+resource "docker_image" "promtail" {
+  name         = "grafana/promtail:2.9.2"
+  keep_locally = true
+}
+
+resource "docker_container" "promtail" {
+  image = docker_image.promtail.image_id
+  name  = "dataops-promtail"
+  networks_advanced {
+    name = docker_network.app_network.name
+  }
+  volumes {
+    host_path      = abspath("${path.module}/promtail.yml")
+    container_path = "/etc/promtail/config.yml"
+  }
+  # Mount Docker socket to read container logs
+  volumes {
+    host_path      = "/var/run/docker.sock"
+    container_path = "/var/run/docker.sock"
+  }
+}
+
 # Grafana
 resource "docker_image" "grafana" {
   name         = "grafana/grafana:latest"
@@ -138,6 +183,6 @@ resource "docker_container" "grafana" {
     external = 3000
   }
   env = [
-    "GF_SECURITY_ADMIN_PASSWORD=admin" # Default password for demo
+    "GF_SECURITY_ADMIN_PASSWORD=admin"
   ]
 }
