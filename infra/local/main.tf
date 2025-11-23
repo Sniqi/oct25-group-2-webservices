@@ -167,6 +167,10 @@ resource "docker_container" "promtail" {
 }
 
 # Grafana
+resource "docker_volume" "grafana_data" {
+  name = "dataops-grafana-data"
+}
+
 resource "docker_image" "grafana" {
   name         = "grafana/grafana:latest"
   keep_locally = true
@@ -185,4 +189,8 @@ resource "docker_container" "grafana" {
   env = [
     "GF_SECURITY_ADMIN_PASSWORD=admin"
   ]
+  volumes {
+    volume_name    = docker_volume.grafana_data.name
+    container_path = "/var/lib/grafana"
+  }
 }
