@@ -62,9 +62,10 @@ resource "docker_container" "app" {
   networks_advanced {
     name = docker_network.app_network.name
   }
+  # Environment variables must match those expected in app/main.py
   env = [
     "ENV=local-terraform",
-    "DB_HOST=dataops-db",
+    "DB_HOST=dataops-db", # Matches the container name of the database
     "DB_USER=dataops",
     "DB_PASSWORD=secretpassword",
     "DB_NAME=dataopsdb"
@@ -137,6 +138,6 @@ resource "docker_container" "grafana" {
     external = 3000
   }
   env = [
-    "GF_SECURITY_ADMIN_PASSWORD=admin" # Standardpasswort für Demo
+    "GF_SECURITY_ADMIN_PASSWORD=admin" # Default password for demo
   ]
 }
