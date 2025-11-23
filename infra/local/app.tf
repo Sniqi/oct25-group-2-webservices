@@ -42,11 +42,11 @@ resource "docker_container" "nginx" {
     external = 8080
   }
   volumes {
-    host_path      = abspath("${path.module}/nginx.conf")
+    host_path      = abspath("${path.module}/config/nginx.conf")
     container_path = "/etc/nginx/nginx.conf"
   }
   # Restart container if config changes
   env = [
-    "CONFIG_HASH=${filesha256("${path.module}/nginx.conf")}"
+    "CONFIG_HASH=${filesha256("${path.module}/config/nginx.conf")}"
   ]
 }

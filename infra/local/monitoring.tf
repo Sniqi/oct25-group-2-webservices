@@ -17,17 +17,17 @@ resource "docker_container" "prometheus" {
     external = 9090
   }
   volumes {
-    host_path      = abspath("${path.module}/prometheus.yml")
+    host_path      = abspath("${path.module}/config/prometheus.yml")
     container_path = "/etc/prometheus/prometheus.yml"
   }
   volumes {
-    host_path      = abspath("${path.module}/alert_rules.yml")
+    host_path      = abspath("${path.module}/config/alert_rules.yml")
     container_path = "/etc/prometheus/alert_rules.yml"
   }
   # Restart container if config changes
   env = [
-    "CONFIG_HASH_PROM=${filesha256("${path.module}/prometheus.yml")}",
-    "CONFIG_HASH_RULES=${filesha256("${path.module}/alert_rules.yml")}"
+    "CONFIG_HASH_PROM=${filesha256("${path.module}/config/prometheus.yml")}",
+    "CONFIG_HASH_RULES=${filesha256("${path.module}/config/alert_rules.yml")}"
   ]
 }
 
@@ -48,12 +48,12 @@ resource "docker_container" "alertmanager" {
     external = 9093
   }
   volumes {
-    host_path      = abspath("${path.module}/alertmanager.yml")
+    host_path      = abspath("${path.module}/config/alertmanager.yml")
     container_path = "/etc/alertmanager/alertmanager.yml"
   }
   # Restart container if config changes
   env = [
-    "CONFIG_HASH=${filesha256("${path.module}/alertmanager.yml")}"
+    "CONFIG_HASH=${filesha256("${path.module}/config/alertmanager.yml")}"
   ]
 }
 
@@ -74,12 +74,12 @@ resource "docker_container" "loki" {
     external = 3100
   }
   volumes {
-    host_path      = abspath("${path.module}/loki.yml")
+    host_path      = abspath("${path.module}/config/loki.yml")
     container_path = "/etc/loki/local-config.yaml"
   }
   # Restart container if config changes
   env = [
-    "CONFIG_HASH=${filesha256("${path.module}/loki.yml")}"
+    "CONFIG_HASH=${filesha256("${path.module}/config/loki.yml")}"
   ]
 }
 
@@ -96,7 +96,7 @@ resource "docker_container" "promtail" {
     name = docker_network.app_network.name
   }
   volumes {
-    host_path      = abspath("${path.module}/promtail.yml")
+    host_path      = abspath("${path.module}/config/promtail.yml")
     container_path = "/etc/promtail/config.yml"
   }
   # Mount Docker socket to read container logs
@@ -106,7 +106,7 @@ resource "docker_container" "promtail" {
   }
   # Restart container if config changes
   env = [
-    "CONFIG_HASH=${filesha256("${path.module}/promtail.yml")}"
+    "CONFIG_HASH=${filesha256("${path.module}/config/promtail.yml")}"
   ]
 }
 
