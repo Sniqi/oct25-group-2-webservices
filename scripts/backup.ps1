@@ -23,12 +23,12 @@ Write-Host "Starting backup of dataops-db..."
 try {
     # Using --no-owner --no-acl to avoid permission issues on restore
     $dumpCommand = "docker exec -i dataops-db pg_dump -U dataops --clean --if-exists --no-owner --no-acl dataopsdb"
-    
+
     # Invoke-Expression or direct execution
     # We pipe the output to a file. In PowerShell, we need to be careful with encoding.
     # Using cmd /c is often the most reliable way to handle binary/text piping from docker in Windows.
     cmd /c "$dumpCommand > $filepath"
-    
+
     if ($LASTEXITCODE -eq 0) {
         Write-Host "✅ Backup successful: $filepath"
     } else {
