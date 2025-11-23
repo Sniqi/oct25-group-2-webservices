@@ -33,16 +33,16 @@ resource "docker_container" "db" {
     name = docker_network.app_network.name
   }
   env = [
-    "POSTGRES_USER=dataops",
-    "POSTGRES_PASSWORD=secretpassword",
-    "POSTGRES_DB=dataopsdb"
+    "POSTGRES_USER=${var.db_user}",
+    "POSTGRES_PASSWORD=${var.db_password}",
+    "POSTGRES_DB=${var.db_name}"
   ]
   volumes {
     volume_name    = docker_volume.db_data.name
     container_path = "/var/lib/postgresql/data"
   }
   healthcheck {
-    test     = ["CMD-SHELL", "pg_isready -U dataops -d dataopsdb"]
+    test     = ["CMD-SHELL", "pg_isready -U ${var.db_user} -d ${var.db_name}"]
     interval = "5s"
     retries  = 5
   }
@@ -51,7 +51,7 @@ resource "docker_container" "db" {
 # --- APP ---
 
 resource "docker_image" "app" {
-  name         = "sniqi/dataops-demo:dev-latest"
+  name         = "${var.docker_username}/dataops-demo:dev-latest"
   keep_locally = false
   pull_triggers = ["${timestamp()}"]
 }
@@ -64,11 +64,11 @@ resource "docker_container" "app" {
   }
   # Environment variables must match those expected in app/main.py
   env = [
-    "ENV=local-terraform",
+    "ENV=${var.app_env}",
     "DB_HOST=dataops-db", # Matches the container name of the database
-    "DB_USER=dataops",
-    "DB_PASSWORD=secretpassword",
-    "DB_NAME=dataopsdb"
+    "DB_USER=${var.db_user}",
+    "DB_PASSWORD=${var.db_password}",
+    "DB_NAME=${var.db_name}"
   ]
   depends_on = [docker_container.db]
 }
