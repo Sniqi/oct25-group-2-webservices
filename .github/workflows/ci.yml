@@ -31,7 +31,7 @@ jobs:
 
       - name: Run Unit Tests (Pytest)
         env:
-          # HIER DIE ÄNDERUNG: Wir nutzen SQLite für die Tests
+          # CHANGE HERE: We use SQLite for tests
           DATABASE_URL: "sqlite:///./test.db"
         run: |
           cd app

@@ -17,7 +17,7 @@ The infrastructure is fully managed as Code (IaC) using **Terraform** and runs l
 *   **Load Testing (Locust)**: Simulates user traffic to test system performance.
 
 ### Data Flow
-1.  User -> **Nginx** (Port 8080) -> **App**
+1.  User -> **Nginx** (Port 8443 HTTPS) -> **App**
 2.  **App** -> **PostgreSQL** (Store/Read data)
 3.  **Prometheus** -> **App** (Scrape metrics)
 4.  **Promtail** -> **Docker Socket** (Read logs) -> **Loki**
@@ -47,8 +47,8 @@ The infrastructure is fully managed as Code (IaC) using **Terraform** and runs l
     ```
 
 3.  **Access**
-    *   **Web App**: [http://localhost:8080](http://localhost:8080)
-    *   **DB Test**: [http://localhost:8080/db-test](http://localhost:8080/db-test) (Creates entries in the DB)
+    *   **Web App**: [https://localhost:8443](https://localhost:8443) (Accept self-signed cert warning)
+    *   **DB Test**: [https://localhost:8443/db-test](https://localhost:8443/db-test) (Creates entries in the DB)
     *   **Prometheus**: [http://localhost:9090](http://localhost:9090)
     *   **Alertmanager**: [http://localhost:9093](http://localhost:9093)
     *   **Grafana**: [http://localhost:3000](http://localhost:3000) (Login: `admin` / `admin`)
@@ -106,11 +106,12 @@ The project uses an automated pipeline (`.github/workflows/ci.yml`) triggered by
 │   └── requirements.txt # Python Dependencies
 ├── infra/
 │   ├── local/           # Terraform Configuration for Local Environment
+│   │   ├── config/      # Configuration files (nginx.conf, prometheus.yml, etc.)
+│   │   ├── certs/       # SSL Certificates
 │   │   ├── main.tf      # Provider & Network Definition
 │   │   ├── app.tf       # App & Nginx Resources
 │   │   ├── database.tf  # Database Resources
-│   │   ├── monitoring.tf # Observability Stack (Prometheus, Loki, etc.)
-│   │   └── ...          # Config files (nginx.conf, prometheus.yml, etc.)
+│   │   └── monitoring.tf # Observability Stack (Prometheus, Loki, etc.)
 │   └── aws/             # (Planned) AWS Configurations
 ├── scripts/             # Maintenance Scripts (Backup/Restore)
 ├── tests/

@@ -41,12 +41,22 @@ resource "docker_container" "nginx" {
     internal = 80
     external = 8080
   }
+  ports {
+    internal = 443
+    external = 8443
+  }
   volumes {
     host_path      = abspath("${path.module}/config/nginx.conf")
     container_path = "/etc/nginx/nginx.conf"
   }
+  volumes {
+    host_path      = abspath("${path.module}/certs")
+    container_path = "/etc/nginx/certs"
+    read_only      = true
+  }
   # Restart container if config changes
   env = [
-    "CONFIG_HASH=${filesha256("${path.module}/config/nginx.conf")}"
+    "CONFIG_HASH=${filesha256("${path.module}/config/nginx.conf")}",
+    "CERT_HASH=${filesha256("${path.module}/certs/nginx.crt")}"
   ]
 }

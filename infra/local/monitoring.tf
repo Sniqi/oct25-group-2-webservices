@@ -156,10 +156,10 @@ resource "docker_container" "locust" {
     external = 8089
   }
   volumes {
-    # Mountet das Locustfile aus dem tests Ordner
+    # Mounts the Locustfile from the tests folder
     host_path      = abspath("${path.module}/../../tests/load/locustfile.py")
     container_path = "/mnt/locust/locustfile.py"
   }
-  # Startet Locust mit Web-Interface
+  # Starts Locust with Web Interface
   command = ["-f", "/mnt/locust/locustfile.py"]
 }

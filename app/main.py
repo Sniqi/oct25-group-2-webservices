@@ -17,18 +17,16 @@ DB_USER = os.getenv("DB_USER", "user")
 DB_PASSWORD = os.getenv("DB_PASSWORD", "password")
 DB_HOST = os.getenv("DB_HOST", "localhost")
 DB_NAME = os.getenv("DB_NAME", "dbname")
-
-# HIER DIE ÄNDERUNG: Prüfen ob DATABASE_URL direkt gesetzt ist
 DATABASE_URL = os.getenv("DATABASE_URL")
 if not DATABASE_URL:
     DATABASE_URL = f"postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}/{DB_NAME}"
 
 engine = None
 
-# SQLite benötigt spezielle Argumente für Multithreading
+# SQLite requires special arguments for multithreading
 connect_args = {"check_same_thread": False} if "sqlite" in DATABASE_URL else {}
 
-# Retry logic (nur sinnvoll für Netzwerk-DBs wie Postgres)
+# Retry logic (only useful for network DBs like Postgres)
 if "sqlite" in DATABASE_URL:
     engine = create_engine(DATABASE_URL, connect_args=connect_args)
     print("Using SQLite database for testing.")
