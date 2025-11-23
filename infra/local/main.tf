@@ -241,3 +241,28 @@ resource "docker_container" "grafana" {
     container_path = "/var/lib/grafana"
   }
 }
+
+# Locust (Load Testing)
+resource "docker_image" "locust" {
+  name         = "locustio/locust"
+  keep_locally = true
+}
+
+resource "docker_container" "locust" {
+  image = docker_image.locust.image_id
+  name  = "dataops-locust"
+  networks_advanced {
+    name = docker_network.app_network.name
+  }
+  ports {
+    internal = 8089
+    external = 8089
+  }
+  volumes {
+    # Mountet das Locustfile aus dem tests Ordner
+    host_path      = abspath("${path.module}/../../tests/load/locustfile.py")
+    container_path = "/mnt/locust/locustfile.py"
+  }
+  # Startet Locust mit Web-Interface
+  command = ["-f", "/mnt/locust/locustfile.py"]
+}
