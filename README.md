@@ -11,13 +11,18 @@ The infrastructure is fully managed as Code (IaC) using **Terraform** and runs l
 *   **Database (PostgreSQL)**: Persistent data storage for the app.
 *   **Reverse Proxy (Nginx)**: Acts as an entrypoint and load balancer in front of the app.
 *   **Monitoring (Prometheus)**: Collects metrics from the app (e.g., request rates).
-*   **Visualization (Grafana)**: Dashboards for analyzing metrics.
+*   **Alerting (Alertmanager)**: Manages alerts triggered by Prometheus.
+*   **Logging (Loki & Promtail)**: Centralized log aggregation (Promtail collects, Loki stores).
+*   **Visualization (Grafana)**: Dashboards for analyzing metrics and logs.
+*   **Load Testing (Locust)**: Simulates user traffic to test system performance.
 
 ### Data Flow
 1.  User -> **Nginx** (Port 8080) -> **App**
 2.  **App** -> **PostgreSQL** (Store/Read data)
 3.  **Prometheus** -> **App** (Scrape metrics)
-4.  User -> **Grafana** (Port 3000) -> **Prometheus** (Visualize data)
+4.  **Promtail** -> **Docker Socket** (Read logs) -> **Loki**
+5.  User -> **Grafana** (Port 3000) -> **Prometheus/Loki** (Visualize metrics & logs)
+6.  User -> **Locust** (Port 8089) -> **App** (Generate Load)
 
 ## 🚀 Quick Start (Local)
 
@@ -45,7 +50,32 @@ The infrastructure is fully managed as Code (IaC) using **Terraform** and runs l
     *   **Web App**: [http://localhost:8080](http://localhost:8080)
     *   **DB Test**: [http://localhost:8080/db-test](http://localhost:8080/db-test) (Creates entries in the DB)
     *   **Prometheus**: [http://localhost:9090](http://localhost:9090)
+    *   **Alertmanager**: [http://localhost:9093](http://localhost:9093)
     *   **Grafana**: [http://localhost:3000](http://localhost:3000) (Login: `admin` / `admin`)
+    *   **Locust (Load Test)**: [http://localhost:8089](http://localhost:8089)
+
+## 🧪 Load Testing & Maintenance
+
+### Load Testing (Locust)
+1.  Open [http://localhost:8089](http://localhost:8089).
+2.  Enter number of users (e.g., 50) and spawn rate (e.g., 5).
+3.  Host is pre-configured as `http://dataops-nginx:80`.
+4.  Click **Start Swarming** to simulate traffic.
+
+### Backup & Restore
+PowerShell scripts are available in `scripts/` to manage the database.
+
+*   **Backup**:
+    ```powershell
+    ./scripts/backup.ps1
+    ```
+    Creates a SQL dump in the `backups/` folder.
+
+*   **Restore**:
+    ```powershell
+    ./scripts/restore.ps1 -BackupFile backups/backup-YYYYMMDD-HHMMSS.sql
+    ```
+    Restores the database from a specific file.
 
 ## 🔄 CI/CD Pipeline (GitHub Actions)
 
@@ -76,9 +106,14 @@ The project uses an automated pipeline (`.github/workflows/ci.yml`) triggered by
 │   └── requirements.txt # Python Dependencies
 ├── infra/
 │   ├── local/           # Terraform Configuration for Local Environment
-│   │   ├── main.tf      # Definition of Docker Resources
-│   │   ├── nginx.conf   # Load Balancer Config
-│   │   └── prometheus.yml # Monitoring Config
+│   │   ├── main.tf      # Provider & Network Definition
+│   │   ├── app.tf       # App & Nginx Resources
+│   │   ├── database.tf  # Database Resources
+│   │   ├── monitoring.tf # Observability Stack (Prometheus, Loki, etc.)
+│   │   └── ...          # Config files (nginx.conf, prometheus.yml, etc.)
 │   └── aws/             # (Planned) AWS Configurations
+├── scripts/             # Maintenance Scripts (Backup/Restore)
+├── tests/
+│   └── load/            # Locust Load Testing Scenarios
 └── .github/workflows/   # CI/CD Pipelines
 ```
