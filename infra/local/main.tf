@@ -95,6 +95,10 @@ resource "docker_container" "nginx" {
     host_path      = abspath("${path.module}/nginx.conf")
     container_path = "/etc/nginx/nginx.conf"
   }
+  # Restart container if config changes
+  env = [
+    "CONFIG_HASH=${filesha256("${path.module}/nginx.conf")}"
+  ]
 }
 
 # --- MONITORING ---
@@ -119,6 +123,41 @@ resource "docker_container" "prometheus" {
     host_path      = abspath("${path.module}/prometheus.yml")
     container_path = "/etc/prometheus/prometheus.yml"
   }
+  volumes {
+    host_path      = abspath("${path.module}/alert_rules.yml")
+    container_path = "/etc/prometheus/alert_rules.yml"
+  }
+  # Restart container if config changes
+  env = [
+    "CONFIG_HASH_PROM=${filesha256("${path.module}/prometheus.yml")}",
+    "CONFIG_HASH_RULES=${filesha256("${path.module}/alert_rules.yml")}"
+  ]
+}
+
+# Alertmanager
+resource "docker_image" "alertmanager" {
+  name         = "prom/alertmanager:latest"
+  keep_locally = true
+}
+
+resource "docker_container" "alertmanager" {
+  image = docker_image.alertmanager.image_id
+  name  = "dataops-alertmanager"
+  networks_advanced {
+    name = docker_network.app_network.name
+  }
+  ports {
+    internal = 9093
+    external = 9093
+  }
+  volumes {
+    host_path      = abspath("${path.module}/alertmanager.yml")
+    container_path = "/etc/alertmanager/alertmanager.yml"
+  }
+  # Restart container if config changes
+  env = [
+    "CONFIG_HASH=${filesha256("${path.module}/alertmanager.yml")}"
+  ]
 }
 
 # Loki (Log Aggregation)
@@ -141,6 +180,10 @@ resource "docker_container" "loki" {
     host_path      = abspath("${path.module}/loki.yml")
     container_path = "/etc/loki/local-config.yaml"
   }
+  # Restart container if config changes
+  env = [
+    "CONFIG_HASH=${filesha256("${path.module}/loki.yml")}"
+  ]
 }
 
 # Promtail (Log Collector)
@@ -164,6 +207,10 @@ resource "docker_container" "promtail" {
     host_path      = "/var/run/docker.sock"
     container_path = "/var/run/docker.sock"
   }
+  # Restart container if config changes
+  env = [
+    "CONFIG_HASH=${filesha256("${path.module}/promtail.yml")}"
+  ]
 }
 
 # Grafana
