@@ -9,6 +9,10 @@ import time
 
 app = FastAPI()
 
+@app.get("/health")
+def health_check():
+    return {"status": "healthy"}
+
 # Expose Prometheus metrics
 Instrumentator().instrument(app).expose(app)
 # -----------------------------------------

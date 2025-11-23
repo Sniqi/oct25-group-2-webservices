@@ -3,3 +3,7 @@ uvicorn==0.27.0
 sqlalchemy==2.0.25
 psycopg2-binary==2.9.9
 prometheus-fastapi-instrumentator==6.1.0
+# Testing & Linting
+pytest==7.4.4
+httpx==0.26.0
+flake8==7.0.0
