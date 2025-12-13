@@ -7,6 +7,9 @@ on:
       - staging
       - main
 
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -59,9 +62,10 @@ jobs:
         with:
           images: ${{ secrets.DOCKER_USERNAME }}/dataops-demo
           tags: |
+            # Always push an immutable tag for traceability/promotion
+            type=sha,prefix=sha-,format=short
             type=raw,value=dev-latest,enable=${{ github.ref == 'refs/heads/dev' }}
             type=raw,value=staging-latest,enable=${{ github.ref == 'refs/heads/staging' }}
-            type=sha,prefix=staging-,enable=${{ github.ref == 'refs/heads/staging' }}
             type=raw,value=latest,enable=${{ github.ref == 'refs/heads/main' }}
 
       - name: Build and push Docker image
