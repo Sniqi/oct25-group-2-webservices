@@ -11,6 +11,9 @@ on:
         required: false
         default: ""
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-staging
   cancel-in-progress: false
@@ -51,7 +54,7 @@ jobs:
             echo "tag=sha-${GITHUB_SHA::7}" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Apply manifests (staging)
+      - name: Apply manifests (staging) with exact image
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           IMAGE_TAG: ${{ steps.img.outputs.tag }}

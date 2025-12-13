@@ -7,6 +7,9 @@ on:
         description: "Docker image tag to deploy (recommended: sha-abcdef1 from a tested staging build)"
         required: true
 
+permissions:
+  contents: read
+
 concurrency:
   group: deploy-prod
   cancel-in-progress: false
@@ -37,7 +40,7 @@ jobs:
         run: |
           aws eks update-kubeconfig --region "$AWS_REGION" --name "$EKS_CLUSTER_NAME"
 
-      - name: Apply manifests (prod)
+      - name: Apply manifests (prod) with exact image
         env:
           DOCKER_USERNAME: ${{ secrets.DOCKER_USERNAME }}
           IMAGE_TAG: ${{ inputs.image_tag }}
