@@ -1,10 +1,14 @@
 # DataOps & Cloud Architecture Project
 
-This project demonstrates a modern DataOps infrastructure, simulated locally using Docker and Terraform, and prepared for future deployment to the AWS Cloud.
+This project demonstrates a modern DataOps infrastructure with two deployment options:
+1. **Local Docker (Terraform)** - Full observability stack for development
+2. **Local Kubernetes (Minikube)** - Multi-environment orchestration demo
+
+Originally designed for AWS Cloud deployment (EKS), now adapted for local demonstration.
 
 ## Architecture
 
-The infrastructure is fully managed as Code (IaC) using **Terraform** and runs locally within Docker containers.
+The infrastructure is fully managed as Code (IaC) using **Terraform** (Docker) or **Kubernetes manifests** (Minikube).
 
 ### Components
 *   **Web App (FastAPI)**: A Python-based REST API.
@@ -24,7 +28,23 @@ The infrastructure is fully managed as Code (IaC) using **Terraform** and runs l
 5.  User -> **Grafana** (Port 3000) -> **Prometheus/Loki** (Visualize metrics & logs)
 6.  User -> **Locust** (Port 8089) -> **App** (Generate Load)
 
-## 🚀 Quick Start (Local)
+## 🚀 Quick Start
+
+### Choose Your Environment
+
+**Option 1: Local Docker (Development & Monitoring)**
+- Best for: Development, observability testing, load testing
+- Includes: Full monitoring stack (Prometheus, Grafana, Loki)
+- See: [Local Docker Setup](#local-docker-setup) below
+
+**Option 2: Local Kubernetes (Demo & Orchestration)**
+- Best for: Demo, multi-environment testing, K8s features
+- Includes: 3 environments (dev/staging/prod), rollback, self-healing
+- See: [docs/setup-minikube.md](docs/setup-minikube.md)
+
+---
+
+## Local Docker Setup
 
 ### Prerequisites
 *   Docker Desktop installed & running
@@ -77,6 +97,57 @@ PowerShell scripts are available in `scripts/` to manage the database.
     ```
     Restores the database from a specific file.
 
+---
+
+## Local Kubernetes Setup (Minikube)
+
+For demonstrating Kubernetes orchestration, multi-environment deployments, and DevOps practices:
+
+### Quick Start
+
+1. **Setup cluster** (one-time):
+   ```powershell
+   # See detailed guide: docs/setup-minikube.md
+   minikube start --cpus=4 --memory=8192 --driver=docker
+   minikube addons enable ingress
+   # ... follow full setup guide
+   ```
+
+2. **Start port-forward** (keep running in separate PowerShell window):
+   ```powershell
+   kubectl -n ingress-nginx port-forward svc/ingress-nginx-controller 443:443 80:80
+   ```
+
+3. **Run demo** (in another PowerShell window):
+   ```powershell
+   # See: docs/demo-notes-minikube.md
+   kubectl -n dev get all
+   curl -k https://dev.dataops.local/health
+   ```
+
+4. **Cleanup**:
+   ```powershell
+   ./scripts/cleanup-minikube.ps1
+   ```
+
+### Documentation
+
+*   **[Setup Guide](docs/setup-minikube.md)** - Complete installation & configuration
+*   **[Demo Script](docs/demo-notes-minikube.md)** - Live demo with failure injection & rollback
+*   **[Cleanup Script](scripts/cleanup-minikube.ps1)** - Reset environment
+
+### What's Included
+
+✅ 3 isolated environments (dev, staging, prod)
+✅ NGINX Ingress with TLS certificates
+✅ PostgreSQL StatefulSets with persistent storage
+✅ Secrets management for credentials
+✅ Zero-downtime deployment protection
+✅ Instant rollback capabilities
+✅ Self-healing pods
+
+---
+
 ## 🔄 CI/CD Pipeline (GitHub Actions)
 
 The project uses an automated pipeline (`.github/workflows/ci.yml`) triggered by every push to the `dev`, `staging`, or `main` branches.
@@ -91,10 +162,12 @@ The project uses an automated pipeline (`.github/workflows/ci.yml`) triggered by
 
 *   **Application**: Python, FastAPI, SQLAlchemy
 *   **Containerization**: Docker
-*   **Infrastructure as Code**: Terraform
+*   **Orchestration**: Kubernetes (Minikube for local)
+*   **Infrastructure as Code**: Terraform (Docker), Kubernetes Manifests
 *   **CI/CD**: GitHub Actions
 *   **Database**: PostgreSQL 15
-*   **Observability**: Prometheus, Grafana
+*   **Observability**: Prometheus, Grafana, Loki
+*   **Ingress**: NGINX Ingress Controller
 
 ## 📂 Project Structure
 
@@ -105,7 +178,7 @@ The project uses an automated pipeline (`.github/workflows/ci.yml`) triggered by
 │   ├── Dockerfile       # Container Definition
 │   └── requirements.txt # Python Dependencies
 ├── infra/
-│   ├── local/           # Terraform Configuration for Local Environment
+│   ├── local/           # Terraform Configuration for Local Docker Environment
 │   │   ├── config/      # Configuration files (nginx.conf, prometheus.yml, etc.)
 │   │   ├── certs/       # SSL Certificates
 │   │   ├── main.tf      # Provider & Network Definition
@@ -113,7 +186,18 @@ The project uses an automated pipeline (`.github/workflows/ci.yml`) triggered by
 │   │   ├── database.tf  # Database Resources
 │   │   └── monitoring.tf # Observability Stack (Prometheus, Loki, etc.)
 │   └── aws/             # (Planned) AWS Configurations
-├── scripts/             # Maintenance Scripts (Backup/Restore)
+├── k8s/                 # Kubernetes Manifests for Minikube
+│   ├── dev/             # Development environment
+│   ├── staging/         # Staging environment
+│   └── prod/            # Production environment
+├── docs/                # Documentation
+│   ├── setup-minikube.md       # Minikube setup guide
+│   ├── demo-notes-minikube.md  # Local K8s demo script
+│   └── demo-notes.md           # Original AWS EKS demo script
+├── scripts/             # Maintenance & Cleanup Scripts
+│   ├── backup.ps1       # Database backup
+│   ├── restore.ps1      # Database restore
+│   └── cleanup-minikube.ps1  # Minikube cleanup
 ├── tests/
 │   └── load/            # Locust Load Testing Scenarios
 └── .github/workflows/   # CI/CD Pipelines
