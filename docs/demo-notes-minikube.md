@@ -1,11 +1,9 @@
 # Live Demo - Minikube (Local Kubernetes)
 
-This demo showcases Kubernetes orchestration, failure injection, and rollback capabilities using a local Minikube cluster.
-
 ## Prerequisites
 
-- Minikube cluster running with all environments deployed `minikube start --cpus=4 --memory=8192 --driver=docker`
-- Port-forwarding active: `kubectl -n ingress-nginx port-forward svc/ingress-nginx-controller 443:443 80:80`
+- Minikube cluster `minikube start --cpus=4 --memory=8192 --driver=docker`
+- Port-forwarding `kubectl -n ingress-nginx port-forward svc/ingress-nginx-controller 443:443 80:80`
 
 ---
 
